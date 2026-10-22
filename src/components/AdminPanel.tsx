@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ADMIN_USERNAME, ADMIN_PASSWORD, COURSES, COUNTRIES } from '@/data/constants';
-import { Lock, LogOut, Plus, Pencil, Trash2, X, Loader2, ShieldCheck, Search } from 'lucide-react';
+import { Lock, LogOut, Plus, Pencil, Trash2, X, Loader as Loader2, ShieldCheck, Search } from 'lucide-react';
 import type { College } from '@/types';
 
 type Props = {
@@ -21,6 +21,7 @@ type Draft = {
   hostel_mess: string;
   min_score: string;
   ranking: string;
+  website_url: string;
 };
 
 const emptyDraft: Draft = {
@@ -34,6 +35,7 @@ const emptyDraft: Draft = {
   hostel_mess: '',
   min_score: '',
   ranking: '',
+  website_url: '',
 };
 
 export default function AdminPanel({ colleges, fetchColleges }: Props) {
@@ -69,6 +71,7 @@ export default function AdminPanel({ colleges, fetchColleges }: Props) {
       hostel_mess: c.hostel_mess,
       min_score: String(c.min_score),
       ranking: c.ranking != null ? String(c.ranking) : '',
+      website_url: c.website_url ?? '',
     });
   };
 
@@ -91,6 +94,7 @@ export default function AdminPanel({ colleges, fetchColleges }: Props) {
       hostel_mess: editing.hostel_mess,
       min_score: Number(editing.min_score) || 0,
       ranking: editing.ranking ? Number(editing.ranking) : null,
+      website_url: editing.website_url || null,
     };
     try {
       if (editing.id) {
@@ -341,6 +345,16 @@ export default function AdminPanel({ colleges, fetchColleges }: Props) {
                   value={editing.image_url}
                   onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
                   placeholder="https://images.pexels.com/..."
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-700 mb-1.5 block">Official Website URL (optional)</label>
+                <input
+                  type="url"
+                  value={editing.website_url}
+                  onChange={(e) => setEditing({ ...editing, website_url: e.target.value })}
+                  placeholder="https://www.college.edu"
                   className="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all"
                 />
               </div>

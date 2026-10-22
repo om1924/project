@@ -10,6 +10,7 @@ export type College = {
   hostel_mess: string;
   min_score: number;
   ranking: number | null;
+  website_url: string | null;
   created_at: string;
 };
 

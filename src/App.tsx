@@ -1,25 +1,43 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import StudentForm from '@/components/StudentForm';
 import Results from '@/components/Results';
 import AdminPanel from '@/components/AdminPanel';
+import AuthPage from '@/components/AuthPage';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 import type { College, StudentForm as Form } from '@/types';
 
-type View = 'home' | 'admin';
+type View = 'home' | 'admin' | 'auth';
 type Stage = 'form' | 'results';
 
 export default function App() {
   const [view, setView] = useState<View>('home');
   const [stage, setStage] = useState<Stage>('form');
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [session, setSession] = useState<Session | null>(null);
   const [form, setForm] = useState<Form | null>(null);
   const [colleges, setColleges] = useState<College[]>([]);
   const [allColleges, setAllColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formRef, setFormRef] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const fetchColleges = useCallback(async () => {
     const { data, error } = await supabase
@@ -47,7 +65,6 @@ export default function App() {
       const score = Number(submittedForm.score);
       let resultList: College[] = [];
 
-      // Priority 1: Exact Course + Country + Minimum Score Eligible
       let query1 = supabase
         .from('colleges')
         .select('*')
@@ -65,7 +82,6 @@ export default function App() {
       if (err1) throw err1;
       resultList = [...(tier1 ?? [])];
 
-      // Priority 2: Exact Course + Country (relaxing score cutoff)
       if (resultList.length < 5) {
         let query2 = supabase
           .from('colleges')
@@ -89,7 +105,6 @@ export default function App() {
         }
       }
 
-      // Priority 3: Same Course across ANY country
       if (resultList.length < 5 && submittedForm.course && submittedForm.course !== 'All') {
         const { data: tier3 } = await supabase
           .from('colleges')
@@ -106,7 +121,6 @@ export default function App() {
         }
       }
 
-      // Priority 4: Fill remaining slots with top-ranked colleges overall
       if (resultList.length < 5) {
         const { data: tier4 } = await supabase
           .from('colleges')
@@ -142,6 +156,17 @@ export default function App() {
     formRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handleAuthSuccess = () => {
+    setView('home');
+    handleReset();
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setView('home');
+    handleReset();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar
@@ -149,10 +174,23 @@ export default function App() {
           setView(v);
           if (v === 'home') handleReset();
         }}
-        currentView={view}
+        currentView={view === 'auth' ? 'home' : view}
+        session={session}
+        onSignIn={() => { setAuthMode('signin'); setView('auth'); }}
+        onSignUp={() => { setAuthMode('signup'); setView('auth'); }}
+        onSignOut={handleSignOut}
       />
 
       <main className="flex-1">
+        {view === 'auth' && (
+          <AuthPage
+            mode={authMode}
+            onModeChange={setAuthMode}
+            onSuccess={handleAuthSuccess}
+            onBack={() => setView('home')}
+          />
+        )}
+
         {view === 'home' && (
           <>
             {stage === 'form' && <Hero onStart={scrollToForm} />}

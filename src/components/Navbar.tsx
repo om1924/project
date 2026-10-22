@@ -1,11 +1,16 @@
-import { GraduationCap, ShieldCheck } from 'lucide-react';
+import { GraduationCap, ShieldCheck, LogIn, UserPlus, LogOut } from 'lucide-react';
+import type { Session } from '@supabase/supabase-js';
 
 type Props = {
   onNavigate: (view: 'home' | 'admin') => void;
   currentView: 'home' | 'admin';
+  session: Session | null;
+  onSignIn: () => void;
+  onSignUp: () => void;
+  onSignOut: () => void;
 };
 
-export default function Navbar({ onNavigate, currentView }: Props) {
+export default function Navbar({ onNavigate, currentView, session, onSignIn, onSignUp, onSignOut }: Props) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,6 +50,38 @@ export default function Navbar({ onNavigate, currentView }: Props) {
               <ShieldCheck className="w-4 h-4" />
               Admin
             </button>
+
+            {session ? (
+              <>
+                <span className="hidden sm:inline-flex text-sm text-slate-500 px-2 max-w-[160px] truncate">
+                  {session.user.email}
+                </span>
+                <button
+                  onClick={onSignOut}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-1.5"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={onSignIn}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors flex items-center gap-1.5"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </button>
+                <button
+                  onClick={onSignUp}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-sky-600 to-blue-700 text-white hover:shadow-lg transition-all flex items-center gap-1.5"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Sign Up
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </div>

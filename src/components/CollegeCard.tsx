@@ -1,4 +1,4 @@
-import { Users, FileText, BadgeIndianRupee, Home, Trophy, MapPin } from 'lucide-react';
+import { Users, FileText, BadgeIndianRupee, Chrome as Home, Trophy, MapPin, ExternalLink } from 'lucide-react';
 import type { College } from '@/types';
 
 type Props = {
@@ -79,6 +79,18 @@ export default function CollegeCard({ college, rank }: Props) {
             </div>
           </div>
         </div>
+
+        {college.website_url && (
+          <a
+            href={college.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Visit Website
+          </a>
+        )}
       </div>
     </article>
   );
