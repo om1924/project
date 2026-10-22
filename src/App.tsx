@@ -8,7 +8,7 @@ import AdminPanel from '@/components/AdminPanel';
 import AuthPage from '@/components/AuthPage';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
-import type { College, StudentForm as Form } from '@/types';
+import type { College, StudentForm as Form, CollegeResult } from '@/types';
 
 type View = 'home' | 'admin' | 'auth';
 type Stage = 'form' | 'results';
@@ -138,6 +138,24 @@ export default function App() {
       }
 
       setColleges(resultList.slice(0, 5));
+
+      const collegeResults: CollegeResult[] = resultList.slice(0, 5).map((c) => ({
+        id: c.id,
+        name: c.name,
+        website_url: c.website_url,
+      }));
+
+      const userEmail = session?.user?.email ?? null;
+
+      const { error: logError } = await supabase.from('search_logs').insert({
+        student_email: userEmail,
+        student_name: submittedForm.name,
+        score: Number(submittedForm.score),
+        course: submittedForm.course,
+        country: submittedForm.country,
+        college_results: collegeResults,
+      });
+      if (logError) console.error('Failed to log search', logError);
     } catch (err) {
       setError('We could not load college recommendations. Please try again. ' + (err as Error).message);
     } finally {

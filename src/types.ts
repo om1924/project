@@ -20,3 +20,20 @@ export type StudentForm = {
   course: string;
   country: string;
 };
+
+export type CollegeResult = {
+  id: string;
+  name: string;
+  website_url: string | null;
+};
+
+export type SearchLog = {
+  id: string;
+  student_email: string | null;
+  student_name: string;
+  score: number;
+  course: string;
+  country: string;
+  college_results: CollegeResult[];
+  created_at: string;
+};
